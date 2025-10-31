@@ -1,0 +1,46 @@
+# --- OS (macOS)
+.DS_Store
+
+# --- Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+dist/
+build/
+wheels/
+
+# --- Virtual envs
+.venv/
+venv/
+env/
+ENV/
+
+# --- IDE / PyCharm
+.idea/
+.vscode/
+
+# --- Local data / artifacts
+data/
+tmp/
+.cache/
+logs/
+*.log
+
+# --- Docker
+**/.docker
+**/.dockerignore
+
+# --- Tests / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+
+# --- Env files
+.env
+.env.*
