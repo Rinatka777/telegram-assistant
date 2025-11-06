@@ -1,3 +1,7 @@
+ACQUIRE BOT TOKEN FROM TG INSTRUCTIONS IN GPT
+
+
+
 from dotenv import load_dotenv; load_dotenv()
 import asyncio
 import logging
