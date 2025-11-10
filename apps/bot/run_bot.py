@@ -47,19 +47,19 @@ async def file_handler(message: Message, bot: Bot)-> None:
         else:
             return
 
-    buf = BytesIO()
-    await bot.download(tg_file, destination = buf)
-    buf.seek(0)
+        buf = BytesIO()
+        await bot.download(tg_file, destination = buf)
+        buf.seek(0)
 
-    files = [("files", (filename, buf.getvalue(), content_type))]
-    async with httpx.AsyncClient(timeout=30) as client:
-        resp = await client.post(f"{API_BASE_URL}/attachments", files=files)
-    if resp.status_code != 200:
-        data = resp.json()
-        stored = [x["stored"] for x in data["uploaded"]]
-        await message.answer(f"Uploaded: {', '.join(stored)}")
-    else:
-        await message.answer(f"Upload failed: {resp.status_code} {resp.text[:200]}")
+        files = [("files", (filename, buf.getvalue(), content_type))]
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(f"{API_BASE_URL}/attachments", files=files)
+        if resp.status_code != 200:
+            data = resp.json()
+            stored = [x["stored"] for x in data["uploaded"]]
+            await message.answer(f"Uploaded: {', '.join(stored)}")
+        else:
+            await message.answer(f"Upload failed: {resp.status_code} {resp.text[:200]}")
 
     except Exception as e:
         await message.answer(f"Error: {e.__class__.__name__}")
