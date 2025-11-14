@@ -1,5 +1,6 @@
 from io import BytesIO
 
+import httpx
 from dotenv import load_dotenv; load_dotenv()
 import asyncio
 import logging
@@ -25,7 +26,7 @@ dp = Dispatcher()
 async def command_start_handler(message: Message) -> None:
     await message.answer(f"Hello, {html.bold(message.from_user.full_name)}!")
 
-@dp.message(F.document | F.photo | F.audio | F.voice):
+@dp.message(F.document | F.photo | F.audio | F.voice)
 async def file_handler(message: Message, bot: Bot)-> None:
     try:
         if message.document:
@@ -52,11 +53,12 @@ async def file_handler(message: Message, bot: Bot)-> None:
         buf.seek(0)
 
         files = [("files", (filename, buf.getvalue(), content_type))]
+
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.post(f"{API_BASE_URL}/attachments", files=files)
-        if resp.status_code != 200:
+        if resp.status_code == 200:
             data = resp.json()
-            stored = [x["stored"] for x in data["uploaded"]]
+            stored = [x["stored_filename"] for x in data["uploaded"] if x.get("success")]
             await message.answer(f"Uploaded: {', '.join(stored)}")
         else:
             await message.answer(f"Upload failed: {resp.status_code} {resp.text[:200]}")
