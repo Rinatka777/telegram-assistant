@@ -1,14 +1,16 @@
-import fitz
+from pathlib import Path
+import pymupdf
 from PIL import Image
 import pytesseract
-from pathlib import Path
+
 
 def extract_text_from_pdf(path: Path) -> str:
-    doc = fitz.open(path)
+    doc = pymupdf.open(str(path))
     text = ""
     for page in doc:
-        text += page.get_text()
-    return text
+        text += page.get_text("text")
+    cleaned = " ".join(text.split())
+    return cleaned
 
 def extract_text_from_image(path: Path) -> str:
     img = Image.open(path)
@@ -25,5 +27,5 @@ def extract_text_generic(path: Path) -> str:
     elif ext == ".pdf":
         return extract_text_from_pdf(path)
     else:
-        raise ValueError(f"Unsupported file type:{ext}")
+        raise ValueError(f"Unsupported file type: {ext}")
 
