@@ -1,8 +1,12 @@
+from pathlib import Path
+
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from typing import List
 from datetime import datetime
 import uuid
 import os
+
+from apps.api.app.extraction import extract_text_generic
 
 app = FastAPI()
 
@@ -29,6 +33,15 @@ async def upload_attachments(files: List[UploadFile] = File(...)):
         contents = await file.read()
         with open(file_path, "wb") as f:
             f.write(contents)
+
+        text = ""
+        try:
+            text = extract_text_generic(Path(file_path))
+        except Exception:
+            text = ""
+
+        preview = text[:300] if text else ""
+
         results.append({
             "success": True,
             "original_filename": file.filename,
@@ -36,11 +49,13 @@ async def upload_attachments(files: List[UploadFile] = File(...)):
             "content_type": file.content_type,
             "size": len(contents),
             "upload_time": datetime.utcnow().isoformat(),
-            "location": str(file_path)
+            "location": str(file_path),
+            "text_preview": preview,
         })
 
     return {"uploaded": results}
 
+#python3 -m uvicorn apps.api.app.main:app --host 0.0.0.0 --port 8000 --reload
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("apps.api.app.main:app", host="0.0.0.0", port=8000, reload=True)
