@@ -58,17 +58,19 @@ async def file_handler(message: Message, bot: Bot)-> None:
             resp = await client.post(f"{API_BASE_URL}/attachments", files=files)
         if resp.status_code == 200:
             data = resp.json()
-            stored = [x["stored_filename"] for x in data["uploaded"] if x.get("success")]
-            await message.answer(f"Uploaded: {', '.join(stored)}")
+            uploaded = data["uploaded"][0]
+            preview = uploaded.get("text_preview") or ""
+            if preview:
+                await message.answer(
+                    "Here is the extracted text preview:\n\n" + preview
+                )
+            else:
+                await message.answer("File uploaded, but I couldn't extract any text.")
         else:
             await message.answer(f"Upload failed: {resp.status_code} {resp.text[:200]}")
 
     except Exception as e:
         await message.answer(f"Error: {e.__class__.__name__}")
-
-
-
-
 
 @dp.message()
 async def echo_handler(message: Message) -> None:
