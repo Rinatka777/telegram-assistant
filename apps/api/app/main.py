@@ -5,8 +5,11 @@ from typing import List
 from datetime import datetime
 import uuid
 import os
-
+from .db import engine, Base
+from . import models
 from apps.api.app.extraction import extract_text_generic
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
