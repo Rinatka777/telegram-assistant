@@ -8,6 +8,10 @@ import os
 from .db import engine, Base
 from . import models
 from apps.api.app.extraction import extract_text_generic
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from .db import get_db
+from . import crud, schemas
 
 Base.metadata.create_all(bind=engine)
 
@@ -20,6 +24,14 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.get("/notes/{note_id}", response_model=schemas.NoteOut)
+def read_note(note_id: int, db: Session = Depends(get_db)):
+    note = crud.get_note(db, note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return note
+
 
 @app.post("/attachments")
 async def upload_attachments(files: List[UploadFile] = File(...)):
