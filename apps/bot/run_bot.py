@@ -58,6 +58,11 @@ async def file_handler(message: Message, bot: Bot)-> None:
             resp = await client.post(f"{API_BASE_URL}/attachments", files=files)
         if resp.status_code == 200:
             data = resp.json()
+            note_id = data["uploaded"][0]["note_id"]
+            preview = data["uploaded"][0]["text_preview"]
+            await message.answer(
+                f"Note #{note_id} created.\n\nPreview:\n{preview}"
+            )
             uploaded = data["uploaded"][0]
             preview = uploaded.get("text_preview") or ""
             if preview:

@@ -34,7 +34,9 @@ def read_note(note_id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/attachments")
-async def upload_attachments(files: List[UploadFile] = File(...)):
+async def upload_attachments(files: List[UploadFile] = File(...),
+                             user_id = int,
+                             db: Session = Depends(get_db)):
     if len(files) > 10:
         raise HTTPException(status_code=400, detail="Maximum number of files is 10")
 
@@ -56,6 +58,14 @@ async def upload_attachments(files: List[UploadFile] = File(...)):
             text = ""
 
         preview = text[:300] if text else ""
+
+        note_in = schemas.NoteCreate(
+            user_id=user_id,
+            attachment_path=str(file_path),
+            full_text=text,
+        )
+
+        note = crud.create_note(db, note_in=note_in)
 
         results.append({
             "success": True,
