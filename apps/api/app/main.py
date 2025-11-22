@@ -1,17 +1,15 @@
 from pathlib import Path
-
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from typing import List
 from datetime import datetime
+from typing import List
 import uuid
 import os
-from .db import engine, Base
-from . import models
-from apps.api.app.extraction import extract_text_generic
-from fastapi import Depends
+
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
-from .db import get_db
-from . import crud, schemas
+
+from .db import engine, Base, get_db
+from . import models, crud, schemas
+from apps.api.app.extraction import extract_text_generic
 
 Base.metadata.create_all(bind=engine)
 
@@ -32,11 +30,12 @@ def read_note(note_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Note not found")
     return note
 
-
 @app.post("/attachments")
-async def upload_attachments(files: List[UploadFile] = File(...),
-                             user_id = int,
-                             db: Session = Depends(get_db)):
+async def upload_attachments(
+    files: List[UploadFile] = File(...),
+    user_id: int = Query(..., description="Telegram user id"),
+    db: Session = Depends(get_db),
+):
     if len(files) > 10:
         raise HTTPException(status_code=400, detail="Maximum number of files is 10")
 
@@ -47,6 +46,7 @@ async def upload_attachments(files: List[UploadFile] = File(...),
         ext = os.path.splitext(file.filename)[1]
         unique_filename = f"{uuid.uuid4()}{ext}"
         file_path = os.path.join("data", "files", unique_filename)
+
         contents = await file.read()
         with open(file_path, "wb") as f:
             f.write(contents)
@@ -64,7 +64,6 @@ async def upload_attachments(files: List[UploadFile] = File(...),
             attachment_path=str(file_path),
             full_text=text,
         )
-
         note = crud.create_note(db, note_in=note_in)
 
         results.append({
@@ -75,12 +74,12 @@ async def upload_attachments(files: List[UploadFile] = File(...),
             "size": len(contents),
             "upload_time": datetime.utcnow().isoformat(),
             "location": str(file_path),
+            "note_id": note.id,
             "text_preview": preview,
         })
 
     return {"uploaded": results}
 
-#python3 -m uvicorn apps.api.app.main:app --host 0.0.0.0 --port 8000 --reload
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("apps.api.app.main:app", host="0.0.0.0", port=8000, reload=True)
