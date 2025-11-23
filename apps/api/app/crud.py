@@ -14,3 +14,9 @@ def create_note(db: Session, note_in: schemas.NoteCreate) -> models.Note:
 
 def get_note(db: Session, note_id: int) -> models.Note | None:
     return db.query(models.Note).filter(models.Note.id == note_id).first()
+
+def create_task
+
+def list_tasks
+
+def complete_task

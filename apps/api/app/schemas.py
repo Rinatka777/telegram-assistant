@@ -15,3 +15,21 @@ class NoteOut(NoteBase):
 
     class Config:
         from_attributes = True
+
+class TaskBase(BaseModel):
+    user_id: int
+    title: str
+    due_at: datetime | None = None
+    note_id: int | None = None
+
+class TaskCreate(TaskBase):
+    pass
+
+class TaskOut(TaskBase):
+    id: int
+    status: str
+    created_at: datetime
+    completed_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
