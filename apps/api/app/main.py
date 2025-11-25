@@ -4,7 +4,7 @@ from typing import List
 import uuid
 import os
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Query
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Query, Body
 from sqlalchemy.orm import Session
 
 from .db import engine, Base, get_db
@@ -29,6 +29,28 @@ def read_note(note_id: int, db: Session = Depends(get_db)):
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
     return note
+
+@app.get("/tasks", response_model=list[schemas.TaskOut])
+def list_tasks(
+    user_id: int = Query(...),
+    status: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    tasks = crud.list_tasks(db, user_id=user_id, status=status)
+    return tasks
+
+@app.post("/tasks/{task_id}/complete", response_model=schemas.TaskOut)
+def complete_task(task_id: int, db: Session = Depends(get_db)):
+    task = crud.complete_task(db, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
+
+@app.post("/tasks", response_model=schemas.TaskOut)
+def create_task(task_in: schemas.TaskCreate, db: Session = Depends(get_db)):
+    task = crud.create_task(db, task_in=task_in)
+    return task
+
 
 @app.post("/attachments")
 async def upload_attachments(

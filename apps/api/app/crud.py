@@ -15,8 +15,30 @@ def create_note(db: Session, note_in: schemas.NoteCreate) -> models.Note:
 def get_note(db: Session, note_id: int) -> models.Note | None:
     return db.query(models.Note).filter(models.Note.id == note_id).first()
 
-def create_task
+def create_task(db: Session, task_in: schemas.TaskCreate) -> models.Task:
+    db_task = models.Task(
+        user_id=task_in.user_id,
+        title=task_in.title,
+        due_at=task_in.due_at,
+        note_id=task_in.note_id,
+    )
+    db.add(db_task)
+    db.commit()
+    db.refresh(db_task)
+    return db_task
 
-def list_tasks
+def list_tasks(db: Session, user_id: int, status: str | None = None) -> list[models.Task]:
+    q = db.query(models.Task).filter(models.Task.user_id == user_id)
+    if status:
+        q = q.filter(models.Task.status == status)
+    return q.order_by(models.Task.due_at.is_(None), models.Task.due_at).all()
 
-def complete_task
+def complete_task(db: Session, task_id: int) -> models.Task | None:
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        return None
+    task.status = "done"
+    task.completed_at = datetime.utcnow()
+    db.commit()
+    db.refresh(task)
+    return task
