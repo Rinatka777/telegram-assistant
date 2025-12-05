@@ -1,12 +1,15 @@
-from pydantic import BaseModel
 from datetime import datetime
+from pydantic import BaseModel
+
 
 class NoteBase(BaseModel):
     user_id: int
     attachment_path: str
 
+
 class NoteCreate(NoteBase):
     full_text: str
+
 
 class NoteOut(NoteBase):
     id: int
@@ -16,14 +19,17 @@ class NoteOut(NoteBase):
     class Config:
         from_attributes = True
 
+
 class TaskBase(BaseModel):
     user_id: int
     title: str
     due_at: datetime | None = None
     note_id: int | None = None
 
+
 class TaskCreate(TaskBase):
     pass
+
 
 class TaskOut(TaskBase):
     id: int

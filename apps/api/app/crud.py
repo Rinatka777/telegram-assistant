@@ -1,5 +1,8 @@
+from datetime import datetime
 from sqlalchemy.orm import Session
+
 from . import models, schemas
+
 
 def create_note(db: Session, note_in: schemas.NoteCreate) -> models.Note:
     db_note = models.Note(
@@ -12,8 +15,10 @@ def create_note(db: Session, note_in: schemas.NoteCreate) -> models.Note:
     db.refresh(db_note)
     return db_note
 
+
 def get_note(db: Session, note_id: int) -> models.Note | None:
     return db.query(models.Note).filter(models.Note.id == note_id).first()
+
 
 def create_task(db: Session, task_in: schemas.TaskCreate) -> models.Task:
     db_task = models.Task(
@@ -27,11 +32,17 @@ def create_task(db: Session, task_in: schemas.TaskCreate) -> models.Task:
     db.refresh(db_task)
     return db_task
 
-def list_tasks(db: Session, user_id: int, status: str | None = None) -> list[models.Task]:
+
+def list_tasks(
+    db: Session,
+    user_id: int,
+    status: str | None = None,
+) -> list[models.Task]:
     q = db.query(models.Task).filter(models.Task.user_id == user_id)
     if status:
         q = q.filter(models.Task.status == status)
     return q.order_by(models.Task.due_at.is_(None), models.Task.due_at).all()
+
 
 def complete_task(db: Session, task_id: int) -> models.Task | None:
     task = db.query(models.Task).filter(models.Task.id == task_id).first()

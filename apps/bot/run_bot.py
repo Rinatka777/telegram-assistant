@@ -3,7 +3,6 @@ import asyncio
 import logging
 import os
 import sys
-
 import httpx
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, html, F
@@ -11,6 +10,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message
+from aiogram.filters import CommandStart, Command, CommandObject
 
 load_dotenv()
 
@@ -79,6 +79,15 @@ async def file_handler(message: Message, bot: Bot) -> None:
 
     except Exception as e:
         await message.answer(f"Error: {e.__class__.__name__}")
+
+@dp.message(Command("add"))
+async def add_task_handler(message: Message, command: CommandObject) -> None:
+    task_title = command.args
+    if not task_title:
+        await message.answer("Please provide a task title. Example: /add Buy milk")
+    return
+
+   keep going here: async with httpx.AsyncClient(timeout=10) as client:
 
 @dp.message()
 async def echo_handler(message: Message) -> None:
