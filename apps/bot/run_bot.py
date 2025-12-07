@@ -85,9 +85,48 @@ async def add_task_handler(message: Message, command: CommandObject) -> None:
     task_title = command.args
     if not task_title:
         await message.answer("Please provide a task title. Example: /add Buy milk")
-    return
+        return
 
-   keep going here: async with httpx.AsyncClient(timeout=10) as client:
+    async with httpx.AsyncClient(timeout=10) as client:
+        try:
+            payload = {
+                "user_id": message.from_user.id,
+                "title": task_title,
+                "due_at": None,
+                "note_id": None
+            }
+            resp = await client.post(f"{API_BASE_URL}/tasks", json=payload)
+            if resp.status_code == 200:
+                task = resp.json()
+                await message.answer(f"✅ Task created! [ID: {task['id']}] {task['title']}")
+            else:
+                await message.answer(f"Failed to create task: {resp.status_code}")
+        except Exception as e:
+            await message.answer(f"Connection error: {str(e)}")
+
+@dp.message(Command("tasks"))
+async def list_tasks_handler(message: Message) -> None:
+    async with httpx.AsyncClient(timeout=10) as client:
+        try:
+            resp = await client.get(
+                f"{API_BASE_URL}/tasks",
+                params={"user_id": message.from_user.id, "status": "open"}
+            )
+            if resp.status_code == 200:
+                tasks = resp.json()
+                if not tasks:
+                    await message.answer("You have no open tasks! 🎉")
+                    return
+
+                lines = ["<b>Your Open Tasks:</b>"]
+                for t in tasks:
+                    lines.append(f"• <code>{t['id']}</code>: {t['title']}")
+                await message.answer("\n".join(lines))
+            else:
+                await message.answer(f"Failed to fetch tasks: {resp.status_code}")
+        except Exception as e:
+            await message.answer(f"Connection error: {str(e)}")
+
 
 @dp.message()
 async def echo_handler(message: Message) -> None:
