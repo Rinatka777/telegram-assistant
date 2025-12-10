@@ -128,7 +128,7 @@ async def list_tasks_handler(message: Message) -> None:
             await message.answer(f"Connection error: {str(e)}")
 
 
-@dp.message()
+@dp.message(Command("done"))
 async def complete_task_handler(message: Message, command: CommandObject) -> None:
     task_id_str = command.args
     if not task_id_str or task_id_str.isdigit():

@@ -6,7 +6,6 @@ import os
 from typing import Optional
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Query, Body
 from sqlalchemy.orm import Session
-
 from .db import engine, Base, get_db
 from . import models, crud, schemas
 from apps.api.app.extraction import extract_text_generic
