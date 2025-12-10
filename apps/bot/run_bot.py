@@ -129,6 +129,29 @@ async def list_tasks_handler(message: Message) -> None:
 
 
 @dp.message()
+async def complete_task_handler(message: Message, command: CommandObject) -> None:
+    task_id_str = command.args
+    if not task_id_str or task_id_str.isdigit():
+        await message.answer("Please specify a valid numeric task ID. Example: /done 1")
+    task_id = int(task_id_str)
+
+    async with httpx.AsyncClient(timeout=10) as client:
+        try:
+            resp = await client.post(
+                f"{API_BASE_URL}/tasks/{task_id}/complete"
+            )
+            if resp.status == 200:
+                task = resp.json()
+                await message.answer(f"✅ Marked task #{task['id']} as completed.")
+            elif resp.status_code == 404:
+                await message.answer(f"Task #{task_id} not found.")
+            else:
+                await message.answer(f"Error completing task: {resp.status_code}")
+
+        except Exception as e:
+            await message.answer(f"Connection error: {str(e)}")
+
+@dp.message()
 async def echo_handler(message: Message) -> None:
     try:
         await message.send_copy(chat_id=message.chat.id)
