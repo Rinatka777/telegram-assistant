@@ -29,6 +29,44 @@ def read_note(note_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Note not found")
     return note
 
+def generate_snippet(text: str, term: str) -> str:
+    text_lower = text.lower()
+    term_lower = term.lower()
+    start_idx = text_lower.find(term_lower)
+
+    if start_idx == -1:
+        return text[:50] + "..."
+
+    start = max(0, start_idx - 30)
+    end = start_idx + len(term) + 30
+
+    snippet = text[start:end]
+    return snippet
+
+@app.get("/notes/search", response_model=list[schemas.NoteSearchResult])
+def search_notes(
+    q: str = Query(None),
+    user_id: int = Query(...),
+    search_term: str = Query(...),
+    db: Session = Depends(get_db),
+):
+    raw_notes = crud.search_notes(db, user_id = user_id, search_term = search_term)
+    results = []
+
+    for note in raw_notes:
+        preview_text = generate_snippet(note.full_text, q)
+        result_object = schemas.NoteSearchResult(
+            id=note.id,
+            title=note.title,
+            match_preview=preview_text
+        )
+        results.append(result_object)
+    return results
+
+
+
+
+
 @app.post("/tasks", response_model=schemas.TaskOut)
 def create_task(
     task_in: schemas.TaskCreate,
@@ -36,7 +74,6 @@ def create_task(
 ):
     task = crud.create_task(db, task_in)
     return task
-
 
 @app.get("/tasks", response_model=list[schemas.TaskOut])
 def list_tasks(

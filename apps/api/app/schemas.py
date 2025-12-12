@@ -19,6 +19,12 @@ class NoteOut(NoteBase):
     class Config:
         from_attributes = True
 
+class NoteSearchResult(NoteBase):
+    id: int
+    match_preview: str
+    created_at: datetime
+
+
 
 class TaskBase(BaseModel):
     user_id: int
