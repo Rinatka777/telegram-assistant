@@ -140,7 +140,7 @@ async def complete_task_handler(message: Message, command: CommandObject) -> Non
             resp = await client.post(
                 f"{API_BASE_URL}/tasks/{task_id}/complete"
             )
-            if resp.status == 200:
+            if resp.status_code == 200:
                 task = resp.json()
                 await message.answer(f"✅ Marked task #{task['id']} as completed.")
             elif resp.status_code == 404:
