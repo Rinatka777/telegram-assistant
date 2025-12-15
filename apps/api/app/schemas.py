@@ -19,10 +19,15 @@ class NoteOut(NoteBase):
     class Config:
         from_attributes = True
 
-class NoteSearchResult(NoteBase):
+
+class NoteSearchResult(BaseModel):  # <--- No baggage
     id: int
+    filename: str
     match_preview: str
     created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 

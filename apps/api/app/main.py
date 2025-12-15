@@ -39,11 +39,9 @@ def search_notes(
 
         result_object = schemas.NoteSearchResult(
             id=note.id,
-            user_id=note.user_id,
-            attachment_path=note.attachment_path,
+            created_at=note.created_at,
             filename=display_name,
-            match_preview=preview_text,
-            created_at=note.created_at
+            match_preview=preview_text
         )
         results.append(result_object)
 
