@@ -22,6 +22,34 @@ def root():
 def health():
     return {"status": "ok"}
 
+@app.get("/notes/search", response_model=list[schemas.NoteSearchResult])
+def search_notes(
+    q: str = Query(..., min_length=1),
+    user_id: int = Query(...),
+    db: Session = Depends(get_db),
+):
+
+    raw_notes = crud.search_notes(db, user_id=user_id, search_term=q)
+    results = []
+
+    for note in raw_notes:
+        display_name = os.path.basename(note.attachment_path)
+
+        preview_text = generate_snippet(note.full_text, q)
+
+        result_object = schemas.NoteSearchResult(
+            id=note.id,
+            user_id=note.user_id,
+            attachment_path=note.attachment_path,
+            filename=display_name,
+            match_preview=preview_text,
+            created_at=note.created_at
+        )
+        results.append(result_object)
+
+    return results
+
+
 @app.get("/notes/{note_id}", response_model=schemas.NoteOut)
 def read_note(note_id: int, db: Session = Depends(get_db)):
     note = crud.get_note(db, note_id)
@@ -43,30 +71,7 @@ def generate_snippet(text: str, term: str) -> str:
     snippet = text[start:end]
     return snippet
 
-@app.get("/notes/search", response_model=list[schemas.NoteSearchResult])
-def search_notes(
-    q: str = Query(..., min_length=1),
-    user_id: int = Query(...),
-    db: Session = Depends(get_db),
-):
 
-    raw_notes = crud.search_notes(db, user_id=user_id, search_term=q)
-    results = []
-
-    for note in raw_notes:
-        display_name = os.path.basename(note.attachment_path)
-
-        preview_text = generate_snippet(note.full_text, q)
-
-        result_object = schemas.NoteSearchResult(
-            id=note.id,
-            filename=display_name,    # <--- Mapping computed value to schema
-            match_preview=preview_text,
-            created_at=note.created_at
-        )
-        results.append(result_object)
-
-    return results
 
 
 @app.post("/tasks", response_model=schemas.TaskOut)

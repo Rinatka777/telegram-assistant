@@ -2,6 +2,17 @@ from pathlib import Path
 import pymupdf
 from PIL import Image
 import pytesseract
+import docx
+
+def extract_text_from_docx(path: Path) -> str:
+    try:
+        doc = docx.Document(path)
+        full_text = []
+        for para in doc.paragraphs:
+            full_text.append(para.text)
+        return "\n".join(full_text)
+    except Exception as e:
+        raise ValueError(f"Error reading .docx file: {e}")
 
 
 def extract_text_from_pdf(path: Path) -> str:
@@ -26,6 +37,8 @@ def extract_text_generic(path: Path) -> str:
         return extract_text_from_image(path)
     elif ext == ".pdf":
         return extract_text_from_pdf(path)
+    elif ext == ".docx":  # <--- NEW BRANCH
+        return extract_text_from_docx(path)
     else:
         raise ValueError(f"Unsupported file type: {ext}")
 
