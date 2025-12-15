@@ -14,7 +14,7 @@ def create_note(db: Session, note_in: schemas.NoteCreate) -> models.Note:
     db.refresh(db_note)
     return db_note
 
-def search_notes(db: Session, user_id: int, search_term:str)-> List[Note]:
+def search_notes(db: Session, user_id: int, search_term:str)-> list[models.Note]:
     return db.query(models.Note).filter(models.Note.user_id == user_id, models.Note.full_text.ilike(f"%{search_term}%")).all()
 
 def get_note(db: Session, note_id: int) -> models.Note | None:

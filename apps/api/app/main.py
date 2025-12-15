@@ -45,26 +45,28 @@ def generate_snippet(text: str, term: str) -> str:
 
 @app.get("/notes/search", response_model=list[schemas.NoteSearchResult])
 def search_notes(
-    q: str = Query(None),
+    q: str = Query(..., min_length=1),
     user_id: int = Query(...),
-    search_term: str = Query(...),
     db: Session = Depends(get_db),
 ):
-    raw_notes = crud.search_notes(db, user_id = user_id, search_term = search_term)
+
+    raw_notes = crud.search_notes(db, user_id=user_id, search_term=q)
     results = []
 
     for note in raw_notes:
+        display_name = os.path.basename(note.attachment_path)
+
         preview_text = generate_snippet(note.full_text, q)
+
         result_object = schemas.NoteSearchResult(
             id=note.id,
-            title=note.title,
-            match_preview=preview_text
+            filename=display_name,    # <--- Mapping computed value to schema
+            match_preview=preview_text,
+            created_at=note.created_at
         )
         results.append(result_object)
+
     return results
-
-
-
 
 
 @app.post("/tasks", response_model=schemas.TaskOut)

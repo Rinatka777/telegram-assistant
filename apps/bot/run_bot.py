@@ -104,6 +104,56 @@ async def add_task_handler(message: Message, command: CommandObject) -> None:
         except Exception as e:
             await message.answer(f"Connection error: {str(e)}")
 
+
+@dp.message(Command("search"))
+async def search_notes_handler(message: Message, command: CommandObject) -> None:
+    # 1. Input Validation
+    query = command.args
+    if not query:
+        await message.answer("Please provide a search query. Example: /search milk")
+        return
+
+    # 2. API Call
+    async with httpx.AsyncClient(timeout=10) as client:
+        try:
+            resp = await client.get(
+                f"{API_BASE_URL}/notes/search",
+                params={
+                    "q": query,
+                    "user_id": message.from_user.id
+                }
+            )
+
+            if resp.status_code == 200:
+                notes = resp.json()
+
+                if not notes:
+                    await message.answer("No notes found matching that query.")
+                    return
+
+                # 3. Formatting Output
+                lines = [f"<b>Found {len(notes)} notes:</b>"]
+
+                for note in notes:
+                    # Use .get() for safety, though 'filename' should exist now
+                    filename = note.get('filename') or "Unnamed File"
+                    preview = note.get('match_preview') or "..."
+                    note_id = note['id']
+
+                    # HTML Formatting
+                    block = f"📄 <b>{filename}</b> (ID: {note_id})\n<i>{preview}</i>"
+                    lines.append(block)
+
+                await message.answer("\n\n".join(lines))
+
+            else:
+                await message.answer(f"Search failed: {resp.status_code}")
+
+        except Exception as e:
+            await message.answer(f"Connection error: {str(e)}")
+
+
+
 @dp.message(Command("tasks"))
 async def list_tasks_handler(message: Message) -> None:
     async with httpx.AsyncClient(timeout=10) as client:
@@ -126,7 +176,6 @@ async def list_tasks_handler(message: Message) -> None:
                 await message.answer(f"Failed to fetch tasks: {resp.status_code}")
         except Exception as e:
             await message.answer(f"Connection error: {str(e)}")
-
 
 @dp.message(Command("done"))
 async def complete_task_handler(message: Message, command: CommandObject) -> None:
