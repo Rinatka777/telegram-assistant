@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from .db import engine, Base, get_db
 from . import models, crud, schemas
 from apps.api.app.extraction import extract_text_generic
+from fastapi.responses import FileResponse
 
 Base.metadata.create_all(bind=engine)
 
@@ -17,6 +18,21 @@ app = FastAPI()
 @app.get("/")
 def root():
     return {"status": "ok", "service": "api"}
+
+@app.get("/notes/{note_id}/download")
+def download_note(
+        note_id: int,
+        db: Session = Depends(get_db),
+):
+    note = crud.get_note(db, note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    file_path = Path(note.attachment_path)
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File missing from disk")
+
+    return FileResponse(file_path)
 
 @app.get("/health")
 def health():
