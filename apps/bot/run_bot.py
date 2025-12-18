@@ -117,6 +117,8 @@ async def get_note_handler(message: Message, command: CommandObject) -> None:
         return
 
 
+
+
 @dp.message(Command("search"))
 async def search_notes_handler(message: Message, command: CommandObject) -> None:
     # 1. Input Validation
