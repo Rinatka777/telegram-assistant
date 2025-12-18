@@ -104,6 +104,18 @@ async def add_task_handler(message: Message, command: CommandObject) -> None:
         except Exception as e:
             await message.answer(f"Connection error: {str(e)}")
 
+@dp.message(Command("get"))
+async def get_note_handler(message: Message, command: CommandObject) -> None:
+    if not command.args:
+        await message.answer("Please provide a note ID. Example: /get 5")
+        return
+
+    try:
+        note_id = int(command.args)
+    except ValueError:
+        await message.answer("Invalid ID. Please use a number (e.g., /get 5).")
+        return
+
 
 @dp.message(Command("search"))
 async def search_notes_handler(message: Message, command: CommandObject) -> None:
