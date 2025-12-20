@@ -5,11 +5,11 @@ import os
 import sys
 import httpx
 from dotenv import load_dotenv
-from aiogram import Bot, Dispatcher, html, F, BufferedInputFile
+from aiogram import Bot, Dispatcher, html, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
-from aiogram.types import Message
+from aiogram.types import Message, BufferedInputFile
 from aiogram.filters import CommandStart, Command, CommandObject
 
 load_dotenv()
