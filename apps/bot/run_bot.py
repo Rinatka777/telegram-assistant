@@ -130,6 +130,7 @@ async def search_notes_handler(message: Message, command: CommandObject) -> None
     # 2. API Call
     async with httpx.AsyncClient(timeout=10) as client:
         try:
+
             resp = await client.get(
                 f"{API_BASE_URL}/notes/search",
                 params={
@@ -165,6 +166,14 @@ async def search_notes_handler(message: Message, command: CommandObject) -> None
 
         except Exception as e:
             await message.answer(f"Connection error: {str(e)}")
+
+    download_url = f"{API_BASE_URL}/notes/{note_id}/download"
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(download_url)
+
+        if resp.status_code == 200:
+            await message.answer(f"Error: {resp.text}")
+            return
 
 
 
