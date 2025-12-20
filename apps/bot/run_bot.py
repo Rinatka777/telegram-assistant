@@ -5,7 +5,7 @@ import os
 import sys
 import httpx
 from dotenv import load_dotenv
-from aiogram import Bot, Dispatcher, html, F
+from aiogram import Bot, Dispatcher, html, F, BufferedInputFile
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
@@ -115,9 +115,16 @@ async def get_note_handler(message: Message, command: CommandObject) -> None:
     except ValueError:
         await message.answer("Invalid ID. Please use a number (e.g., /get 5).")
         return
+    download_url = f"{API_BASE_URL}/notes/{note_id}/download"
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(download_url)
 
+        if resp.status_code != 200:
+            await message.answer(f"Error: {resp.text}")
+            return
 
-
+        input_file = BufferedInputFile(resp.content, filename=f"note_{note_id}_download")
+        await message.answer_document(input_file, caption=f"Here is your file (ID: {note_id})")
 
 @dp.message(Command("search"))
 async def search_notes_handler(message: Message, command: CommandObject) -> None:
@@ -166,16 +173,6 @@ async def search_notes_handler(message: Message, command: CommandObject) -> None
 
         except Exception as e:
             await message.answer(f"Connection error: {str(e)}")
-
-    download_url = f"{API_BASE_URL}/notes/{note_id}/download"
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(download_url)
-
-        if resp.status_code == 200:
-            await message.answer(f"Error: {resp.text}")
-            return
-
-
 
 @dp.message(Command("tasks"))
 async def list_tasks_handler(message: Message) -> None:
