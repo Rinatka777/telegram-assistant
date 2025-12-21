@@ -37,7 +37,7 @@ def extract_text_generic(path: Path) -> str:
         return extract_text_from_image(path)
     elif ext == ".pdf":
         return extract_text_from_pdf(path)
-    elif ext == ".docx":  # <--- NEW BRANCH
+    elif ext == ".docx":
         return extract_text_from_docx(path)
     else:
         raise ValueError(f"Unsupported file type: {ext}")
