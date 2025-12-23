@@ -9,6 +9,7 @@ class NoteBase(BaseModel):
 
 class NoteCreate(NoteBase):
     full_text: str
+    summary: str | None = None
 
 
 class NoteOut(NoteBase):

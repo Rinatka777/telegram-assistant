@@ -12,6 +12,7 @@ class Note(Base):
     attachment_path = Column(String, nullable=False)
     full_text = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+    summary = Column(Text, nullable=True)
 
 
 class Task(Base):

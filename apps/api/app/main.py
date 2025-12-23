@@ -7,7 +7,7 @@ from typing import Optional
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Query, Body
 from sqlalchemy.orm import Session
 from .db import engine, Base, get_db
-from . import models, crud, schemas
+from . import models, crud, schemas, ai_service
 from apps.api.app.extraction import extract_text_generic
 from fastapi.responses import FileResponse
 
@@ -136,10 +136,13 @@ async def upload_attachments(
             f.write(contents)
 
         text = ""
+
         try:
             text = extract_text_generic(Path(file_path))
         except Exception:
             text = ""
+
+        ai_summary = ai_service.summarize_text(text)
 
         preview = text[:300] if text else ""
 
@@ -147,6 +150,7 @@ async def upload_attachments(
             user_id=user_id,
             attachment_path=str(file_path),
             full_text=text,
+            summary=ai_summary
         )
         note = crud.create_note(db, note_in=note_in)
 

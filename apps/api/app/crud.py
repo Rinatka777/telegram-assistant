@@ -8,6 +8,7 @@ def create_note(db: Session, note_in: schemas.NoteCreate) -> models.Note:
         user_id=note_in.user_id,
         attachment_path=note_in.attachment_path,
         full_text=note_in.full_text,
+        summary=note_in.summary
     )
     db.add(db_note)
     db.commit()
