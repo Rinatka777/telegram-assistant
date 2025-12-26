@@ -168,6 +168,23 @@ async def upload_attachments(
 
     return {"uploaded": results}
 
+@app.post("/chat")
+async def chat(request: schemas.ChatRequest, db: Session = Depends(get_db)):
+    found_notes = crud.search_notes(db, user_id=request.user_id, search_term=request.question)
+    texts= []
+    for note in found_notes:
+        texts.append(note.full_text)
+    if not texts:
+        return "I couldn't find any notes matching your question."
+
+    context_block = "\n\n".join(texts)
+
+    return ai_service.answer_user_question(context_block, request.question)
+
+
+
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("apps.api.app.main:app", host="0.0.0.0", port=8000, reload=True)
