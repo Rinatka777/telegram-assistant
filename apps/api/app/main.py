@@ -1,3 +1,6 @@
+#uvicorn apps.api.app.main:app --reload --port 8000
+#python3 -m apps.bot.run_bot
+
 from pathlib import Path
 from datetime import datetime
 from typing import List
@@ -168,17 +171,19 @@ async def upload_attachments(
 
     return {"uploaded": results}
 
+
 @app.post("/chat")
 async def chat(request: schemas.ChatRequest, db: Session = Depends(get_db)):
-    found_notes = crud.search_notes(db, user_id=request.user_id, search_term=request.question)
-    texts= []
+    found_notes = crud.search_notes(db, user_id=request.user_id)
+    if not found_notes:
+        print("Search failed. Switching to Recent Files Context.")
+        found_notes = crud.get_user_notes(db, user_id=request.user_id, limit=3)
+    texts = []
     for note in found_notes:
         texts.append(note.full_text)
     if not texts:
-        return "I couldn't find any notes matching your question."
-
+        return "I have no files from you to analyze."
     context_block = "\n\n".join(texts)
-
     return ai_service.answer_user_question(context_block, request.question)
 
 

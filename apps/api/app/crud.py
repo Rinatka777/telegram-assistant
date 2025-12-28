@@ -15,8 +15,12 @@ def create_note(db: Session, note_in: schemas.NoteCreate) -> models.Note:
     db.refresh(db_note)
     return db_note
 
-def search_notes(db: Session, user_id: int, search_term:str)-> list[models.Note]:
-    return db.query(models.Note).filter(models.Note.user_id == user_id, models.Note.full_text.ilike(f"%{search_term}%")).all()
+def search_notes(db: Session, user_id: int, limit: int = 3)-> list[models.Note]:
+    return db.query(models.Note)\
+        .filter(models.Note.user_id == user_id)\
+        .order_by(models.Note.created_at.desc())\
+        .limit(limit)\
+        .all()
 
 def get_note(db: Session, note_id: int) -> models.Note | None:
     return db.query(models.Note).filter(models.Note.id == note_id).first()

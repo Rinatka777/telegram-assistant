@@ -11,6 +11,7 @@ from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message, BufferedInputFile
 from aiogram.filters import CommandStart, Command, CommandObject
+from apps.bot.handlers import router
 
 load_dotenv()
 
@@ -220,16 +221,12 @@ async def complete_task_handler(message: Message, command: CommandObject) -> Non
         except Exception as e:
             await message.answer(f"Connection error: {str(e)}")
 
-@dp.message()
-async def echo_handler(message: Message) -> None:
-    try:
-        await message.send_copy(chat_id=message.chat.id)
-    except TypeError:
-        await message.answer("Nice try!")
-
 async def main() -> None:
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    dp = Dispatcher()
+    dp.include_router(router)
+    await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 if __name__ == "__main__":
