@@ -35,7 +35,12 @@ def answer_user_question(context:str, question:str) -> str:
         response = client.chat.completions.create(
             model = "gpt-4o-mini",
             messages = [
-                {"role": "system", "content": "You are a helpful and caring assistant. If the document is uploaded - summarize it in 1 concise sentence. Focus on the main topic, dates, and money amounts. If the user ask questions- ask politely and friendly-you can use smiles"},
+                {"role": "system", "content": (
+                    "You are a helpful assistant. "
+                    "If Context is provided, prioritize it to answer the question. "
+                    "If the Context is missing or irrelevant, answer from your own general knowledge. "
+                    "Be polite and concise."
+                )},
                 {"role": "user", "content": f"Context: {context}\nQuestion: {question}"}
             ],
             max_tokens=150,

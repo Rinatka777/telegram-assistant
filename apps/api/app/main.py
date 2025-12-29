@@ -181,9 +181,11 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(get_db)):
     texts = []
     for note in found_notes:
         texts.append(note.full_text)
-    if not texts:
-        return "I have no files from you to analyze."
-    context_block = "\n\n".join(texts)
+
+    if texts:
+        context_block = "\n\n".join(texts)
+    else:
+        context_block = ""
     return ai_service.answer_user_question(context_block, request.question)
 
 
