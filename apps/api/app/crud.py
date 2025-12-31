@@ -65,3 +65,11 @@ def delete_user_notes(db: Session, user_id: int) -> int:
     num_deleted = db.query(models.Note).filter(models.Note.user_id == user_id).delete()
     db.commit()
     return num_deleted
+
+def get_user_notes(db: Session, user_id: int, limit: int = 3):
+    """Fetch the most recent notes for a user, regardless of content."""
+    return db.query(models.Note)\
+        .filter(models.Note.user_id == user_id)\
+        .order_by(models.Note.created_at.desc())\
+        .limit(limit)\
+        .all()
