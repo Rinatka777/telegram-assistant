@@ -4,6 +4,7 @@ from aiogram import Router, F
 from aiogram.types import Message
 from fastapi import UploadFile
 import uuid, os
+from aiogram.filters import Command
 
 router = Router()
 
@@ -96,3 +97,19 @@ async def handle_voice_message(message: Message):
     finally:
         if os.path.exists(temp_path):
             os.remove(temp_path)
+
+
+@router.message(Command("clear"))
+async def handle_clear_command(message: Message):
+    user_id = message.from_user.id
+
+    try:
+        response = requests.delete(f"http://127.0.0.1:8000/notes?user_id={user_id}")
+
+        if response.status_code == 200:
+            await message.answer("🧹 History cleared! I have forgotten all your previous files.")
+        else:
+            await message.answer("Could not clear history. (API Error)")
+
+    except Exception as e:
+        await message.answer(f"Connection error: {e}")

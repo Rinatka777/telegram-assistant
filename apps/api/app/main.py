@@ -203,6 +203,11 @@ async def transcribe(file: UploadFile = File(...)):
 
     return {"text": text}
 
+@app.delete("/notes")
+async def clear_notes(user_id: int, db: Session = Depends(get_db)):
+    crud.delete_user_notes(db, user_id=user_id)
+    return {"message": "All notes cleared."}
+
 
 
 if __name__ == "__main__":
