@@ -102,12 +102,16 @@ async def handle_voice_message(message: Message):
 @router.message(Command("clear"))
 async def handle_clear_command(message: Message):
     user_id = message.from_user.id
+    await message.bot.send_chat_action(chat_id=message.chat.id, action="typing")
 
     try:
         response = requests.delete(f"http://127.0.0.1:8000/notes?user_id={user_id}")
 
         if response.status_code == 200:
-            await message.answer("🧹 History cleared! I have forgotten all your previous files.")
+            data = response.json()
+            msg = data.get("message", "Done.")
+            # The bot will now say: "Deleted 5 notes." or "Deleted 0 notes."
+            await message.answer(f"🧹 {msg}")
         else:
             await message.answer("Could not clear history. (API Error)")
 

@@ -59,6 +59,9 @@ def complete_task(db: Session, task_id: int) -> models.Task | None:
     db.refresh(task)
     return task
 
-def delete_user_notes(db: Session, user_id: int):
-    db.query(models.Note).filter(models.Note.user_id == user_id).delete()
+def delete_user_notes(db: Session, user_id: int) -> int:
+    """Deletes notes and returns the count of deleted items."""
+    # .delete() returns the number of rows matched/deleted
+    num_deleted = db.query(models.Note).filter(models.Note.user_id == user_id).delete()
     db.commit()
+    return num_deleted
