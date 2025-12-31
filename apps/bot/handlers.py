@@ -62,7 +62,7 @@ async def handle_voice_message(message: Message):
     await message.bot.send_chat_action(chat_id=message.chat.id, action="typing")
 
     file_id = message.voice.file_id
-    file = message.bot.get_file(file_id)
+    file = await message.bot.get_file(file_id)
     file_path = file.file_path
     temp_path = f"data/files/voice_{uuid.uuid4()}.ogg"
     os.makedirs("data/files", exist_ok=True)
