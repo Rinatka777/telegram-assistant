@@ -3,6 +3,7 @@ from pathlib import Path
 from aiogram import Router, F
 from aiogram.types import Message
 from fastapi import UploadFile
+import uuid, os
 
 router = Router()
 
@@ -55,3 +56,43 @@ async def handle_text_message(message: Message):
 
     except Exception as e:
         await message.answer(f"Connection error: {e}")
+
+@router.message(F.voice)
+async def handle_voice_message(message: Message):
+    await message.bot.send_chat_action(chat_id=message.chat.id, action="typing")
+
+    file_id = message.voice.file_id
+    file = message.bot.get_file(file_id)
+    file_path = file.file_path
+    temp_path = f"data/files/voice_{uuid.uuid4()}.ogg"
+    os.makedirs("data/files", exist_ok=True)
+    await message.bot.download_file(file_path, temp_path)
+
+    try:
+        with open(temp_path, 'rb') as f:
+            files = {'file': (temp_path, f, 'audio/ogg')}
+            response = requests.post("http://127.0.0.1:8000/transcribe", files=files)
+
+        if response.status_code == 200:
+            transcribed_text = response.json().get("text", "")
+            await message.reply(f"🎤 I heard: \"{transcribed_text}\"")
+            payload = {
+                "question": transcribed_text,
+                "user_id": message.from_user.id
+            }
+            chat_response = requests.post("http://127.0.0.1:8000/chat", json=payload)
+
+            if chat_response.status_code == 200:
+                await message.answer(chat_response.json())
+            else:
+                await message.answer("I heard you, but I couldn't think of an answer.")
+
+        else:
+            await message.answer("Could not transcribe audio.")
+
+    except Exception as e:
+        await message.answer(f"Voice Error: {e}")
+
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)

@@ -188,7 +188,20 @@ async def chat(request: schemas.ChatRequest, db: Session = Depends(get_db)):
         context_block = ""
     return ai_service.answer_user_question(context_block, request.question)
 
+@app.post("/transcribe")
+async def transcribe(file: UploadFile = File(...)):
+    temp_filename = f"temp_{uuid.uuid4()}.ogg"
+    file_path = os.path.join("data", "files", temp_filename)
+    os.makedirs("data/files", exist_ok=True)
+    contents = await file.read()
+    with open(file_path, "wb") as f:
+        f.write(contents)
 
+    text = ai_service.transcribe_audio(file_path)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    return {"text": text}
 
 
 

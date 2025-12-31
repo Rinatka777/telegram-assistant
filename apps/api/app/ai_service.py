@@ -50,3 +50,18 @@ def answer_user_question(context:str, question:str) -> str:
     except Exception as e:
         print(f"AI Chat Error: {e}")
         return "I'm having trouble thinking right now (AI Error)."
+
+def transcribe_audio(file_path: str) -> str:
+    if not os.path.exists(file_path):
+        return "Voice file not found."
+
+    try:
+        audio_file = open(file_path, "rb")
+        transcript = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file
+        )
+        return transcript.text
+    except Exception as e:
+        print(f"Whisper Error: {e}")
+        return "Error transcribing audio."
